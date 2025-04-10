@@ -54,6 +54,27 @@ Get-Module -ListAvailable Selenium
 
 ### 🧰 Register Credentials
 
+I wrote 2 lightweight credentials management functions; ```Register-AppCredentials``` and ```Get-AppCredentials```. They use ```ConvertFrom-SecureString``` **without** providing a key ```-SecureKey```. 
+
+PowerShell uses [Windows Data Protection API (DPAPI)](http://msdn.microsoft.com/en-us/library/ms995355.aspx#windataprotection-dpapi_topic04) behind the scenes when you don’t explicitly provide a key.
+
+##### Where Are the keys stored with DPAPI?
+
+1. The encryption key is derived from the user's logon credentials.
+1. The actual encryption keys are stored by Windows in the user's profile, in a secure location handled by the Local Security Authority (LSA).
+
+So effectively only the same user on the same machine can decrypt the value (assuming no roaming profile or external key). **Basically, it is as secure as your Windows password**
+
+##### DAPI, is it safe ?
+
+Using ```(ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString)``` is safe enough for storing credentials for the same user on the same machine. It uses DPAPI and does not expose your password in plain text.
+
+But it is not secure enough if:
+1. You expect to use the encrypted credentials on another machine or by another user.
+1. You're protecting against scenarios where the user account may be compromised.
+1. If you're building something for production or with elevated risk, consider stronger key-based encryption or using a secure vault (e.g., Windows Credential Manager, Azure Key Vault, or a 3rd-party secrets manager).
+
+
 1. Run the following:
 
 ```powershell
@@ -67,9 +88,19 @@ Register-LinkedInCreds --Gui
 
 ![creds](img/creds.gif)
 
+
 ---
 
-## 🧠 Function Overview
+##### 🛡️ How to Make It More Secure (Optional):
+
+- Use `ConvertFrom-SecureString -Key $aesKey` to use your **own key**. [example](http://arsscriptum.github.io/blog/cryptography-aes-selfsignedcert/)
+- Generate a **256-bit key**, store it securely (e.g., in the Windows certificate store or a secure vault).
+- This allows decryption on another machine or by a service account, **but now you’re responsible for key security**.
+
+---
+
+
+## 🧠 Test Function Overview
 
 ### `Start-LinkedInScrapeTest`
 
