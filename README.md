@@ -74,6 +74,7 @@ But it is not secure enough if:
 1. You're protecting against scenarios where the user account may be compromised.
 1. If you're building something for production or with elevated risk, consider stronger key-based encryption or using a secure vault (e.g., Windows Credential Manager, Azure Key Vault, or a 3rd-party secrets manager).
 
+##### Enter your own Credentials
 
 1. Run the following:
 
