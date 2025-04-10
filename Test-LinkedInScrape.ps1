@@ -13,6 +13,12 @@
 param()
 
 
+$UtilsPath = "$PSScriptRoot\Utils.ps1"
+. "$UtilsPath"
+
+
+
+
 function Register-HtmlAgilityPack {
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -335,8 +341,20 @@ function Save-BrowseLinkedInPage {
 
         # Start a Firefox browser and go to the LinkedIn page
         $Url = "https://www.linkedin.com/company/{0}/posts/?feedView=all" -f $CompanyName
+        $IsFirefoxInstalled = Test-FirefoxInstalled
+        $IsMsEdgeInstalled = Test-MsEdgeInstalled
+        $IsChromeInstalled = Test-ChromeInstalled
+
+        if($IsFirefoxInstalled){
+            $Driver = Start-SeFirefox -StartURL "$Url" 
+        }elseif($IsChromeInstalled){
+            $Driver = Start-SeChrome -StartURL "$Url" 
+        }elseif($IsMsEdgeInstalled){
+            $Driver = Start-SeEdge -StartURL "$Url" 
+        }else{
+            throw "no supported browser detected!"
+        }
         
-        $Driver = Start-SeFirefox -StartURL "$Url" 
         Show-MessageWithDelay "Opening $Url..." -Delay 5
         Write-Host -n "Get Username Input Element..." -f Blue
         $UsernameElement = Find-SeElement -Driver $Driver -Wait -Timeout 10 -XPath $XPathUsername
