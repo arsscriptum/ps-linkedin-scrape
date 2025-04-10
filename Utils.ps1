@@ -232,7 +232,8 @@ function Register-AppCredentials {
         [string]$Password
     )
     try {    
-        $RegKeyRoot = "HKCU:\Software\arsscriptum\ps-linkedin-scrape\{0}\credentials" -f $Id
+        $RegKeyRoot = "HKCU:\Software\arsscriptum\ps-linkedin-scrape\{0}" -f $Id
+        $RegKeyRootCreds = "{0}\credentials" -f $RegKeyRoot
 
         [securestring]$SecPassword = ConvertTo-SecureString $Password -AsPlainText -Force
         [pscredential]$Credentials = New-Object System.Management.Automation.PSCredential ($Username, $SecPassword)
@@ -241,9 +242,9 @@ function Register-AppCredentials {
         $EncodedPassword = ConvertFrom-SecureString $Credentials.Password
 
         $epoch = [int][double]::Parse((Get-Date -UFormat %s))
-        New-RegistryValue -Path $RegKeyRoot -Name "$Id" -Type "DWORD" -Value $epoch | Out-null
-        New-ItemProperty -Path $RegKeyRoot -Name "username" -Value $Username -PropertyType "String" -Force -ErrorAction Stop | Out-null
-        New-ItemProperty -Path $RegKeyRoot -Name "password" -Value $EncodedPassword -PropertyType "String"  -Force -ErrorAction Stop | Out-null
+        New-ItemProperty -Path $RegKeyRoot -Name "$Id" -Value $epoch -PropertyType "DWORD"  -Force -ErrorAction Stop | Out-null
+        New-ItemProperty -Path $RegKeyRootCreds -Name "username" -Value $Username -PropertyType "String" -Force -ErrorAction Stop | Out-null
+        New-ItemProperty -Path $RegKeyRootCreds -Name "password" -Value $EncodedPassword -PropertyType "String"  -Force -ErrorAction Stop | Out-null
 
         return ($r1 -and $r2)
     } catch {
