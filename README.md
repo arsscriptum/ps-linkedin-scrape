@@ -63,6 +63,8 @@ Register-LinkedInCreds --Gui
 
 2. Enter your credentials (they will be securely stored in the registry, encrypted using DAPI)
 
+**FOR TESTING** You may want to set ```$TestOutput = $True``` in *Utils.ps1:139* to view the credentials in clear when you sent them.
+
 ![creds](img/creds.gif)
 
 ---
