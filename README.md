@@ -49,8 +49,23 @@ Get-Module -ListAvailable Selenium
 
 ![install](img/htmlagility.png)
 
+
 ---
 
+### 🧰 Register Credentials
+
+1. Run the following:
+
+```powershell
+. ./Utils.ps1
+Register-LinkedInCreds --Gui
+```
+
+2. Enter your credentials (they will be securely stored in the registry, encrypted using DAPI)
+
+![creds](img/creds.gif)
+
+---
 
 ## 🧠 Function Overview
 
