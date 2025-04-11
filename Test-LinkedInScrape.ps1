@@ -157,9 +157,9 @@ function Save-BrowseLinkedInPage {
         [Parameter(Mandatory = $True, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [string]$HtmlFilePath,        
-        [Parameter(Mandatory = $False, Position = 0)]
-        [string]$CompanyName = "machitech-automation-inc-",
-        [Parameter(Mandatory = $false, Position = 1, HelpMessage = 'MaxBytes')]
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$CompanyName,
+        [Parameter(Mandatory = $false, HelpMessage = 'MaxBytes')]
         [int]$MaxBytes=[int]::MaxValue
     )
     try {
@@ -408,8 +408,10 @@ function Save-LinkedInImage {
 function Start-LinkedInScrapeTest {
     [CmdletBinding(SupportsShouldProcess)]
     param(
-        [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'MaxBytes')]
-        [int]$MaxBytes=[int]::MaxValue        
+        [Parameter(Mandatory = $True, Position = 0)]
+        [string]$CompanyName,
+        [Parameter(Mandatory = $false, HelpMessage = 'MaxBytes')]
+        [int]$MaxBytes=[int]::MaxValue
     )
     try {
         $DoConvertBytes =  (Get-Command 'Convert-Bytes' -ErrorAction Ignore) -ne $Null
@@ -446,7 +448,7 @@ function Start-LinkedInScrapeTest {
             Write-Host "Web page data stream limited to $MaxBytesLimitStr" -f DarkCyan
             # TEST ONLY:  Limit Downloaded Page to 2MB
             #$Ret = Save-BrowseLinkedInPage -HtmlFilePath "$OutFilePath" -MaxBytes 2Mb 
-            $Ret = Save-BrowseLinkedInPage -HtmlFilePath "$OutFilePath" -MaxBytes $MaxBytes
+            $Ret = Save-BrowseLinkedInPage -HtmlFilePath "$OutFilePath" -CompanyName "$CompanyName" -MaxBytes $MaxBytes
             if ((!$Ret) -Or !(Test-Path -Path "$OutFilePath" -PathType Leaf)) {
                 throw "Saving Error Html File path `"$OutFilePath`"  doesn't exists"
             }else{
@@ -466,13 +468,15 @@ function Start-LinkedInScrapeTest {
         }
         
         
-        $OutFileDir = Join-Path "$PWD" "downloaded_images"
+        $dirname = "{0}_images" -f "$CompanyName"
+        $dirname = $dirname.Replace(" ","_")
+        $OutFileDir = Join-Path "$PWD" "$dirname"
         Remove-Item -Path "$OutFileDir" -Recurse -Force -ErrorAction Ignore | Out-Null
         New-Item -Path "$OutFileDir" -ItemType Directory -Force -ErrorAction Stop | Out-Null
 
         $GitIgnore = Join-Path "$PWD" ".gitignore"
-        if(!(Select-String -Path "$GitIgnore" -Pattern "downloaded_images")) {
-            Add-Content -Path "$GitIgnore" -Value "downloaded_images" -Force
+        if(!(Select-String -Path "$GitIgnore" -Pattern "$dirname")) {
+            Add-Content -Path "$GitIgnore" -Value "$dirname" -Force
             Write-Host "Updating .gitignore"
         }
         
@@ -497,6 +501,36 @@ function Start-LinkedInScrapeTest {
         $ExplorerExe = (Get-Command 'explorer.exe').Source
         & "$ExplorerExe" "$OutFileDir"
 
+
+    } catch {
+        Write-Error "$_"
+    }
+
+}
+
+
+
+
+
+function Start-ScrapeTest {
+    [CmdletBinding(SupportsShouldProcess)]
+    param()
+    try {
+      
+      [int]$MaxBytesVal=[int]::MaxValue
+
+      Write-Host "Start Scrape for ubisoft" -f DarkCyan
+            
+
+      Start-LinkedInScrapeTest -CompanyName "ubisoft" -MaxBytes 5Mb
+
+      Write-Host "Start Scrape for machitech-automation-inc-" -f DarkCyan
+
+      Start-LinkedInScrapeTest -CompanyName "machitech-automation-inc-"
+
+      Write-Host "Start Scrape for genetec" -f DarkCyan
+      
+      Start-LinkedInScrapeTest -CompanyName "genetec" -MaxBytes 8Mb
 
     } catch {
         Write-Error "$_"
